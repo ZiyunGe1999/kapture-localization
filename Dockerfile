@@ -115,7 +115,7 @@ RUN      python3 setup.py install
 
 ######### PYCOLMAP #############################################################
 WORKDIR ${SOURCE_PREFIX}
-RUN     git clone --recursive https://github.com/mihaidusmanu/pycolmap.git
+RUN     git clone -b v0.1.0 --recursive https://github.com/mihaidusmanu/pycolmap.git
 WORKDIR ${SOURCE_PREFIX}/pycolmap
 RUN     python3 -m pip install ./
 
