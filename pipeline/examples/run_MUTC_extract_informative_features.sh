@@ -1,4 +1,4 @@
-#!/bin/bash -e -v
+#!/bin/bash -e
 # Run this script in docker,
 # but first pull the most recent version.
 
@@ -9,9 +9,9 @@
 
 # 0a) Define paths and params
 PYTHONBIN=python3.6
-WORKING_DIR=/data/working_dir_MUTC
+WORKING_DIR=/data/working_dir_MUTC_resized_informative_features
 DATASETS_PATH=/data
-DATASET=MUTC
+DATASET=MUTC_resized
 mkdir -p ${DATASETS_PATH}
 mkdir -p ${WORKING_DIR}
 
@@ -61,35 +61,36 @@ ln -s ${DATASETS_PATH}/${DATASET}/mapping/sensors/records_data ${WORKING_DIR}/${
 #  -o ${WORKING_DIR}/${DATASET}/map_plus_query \
 #  --image_transfer link_relative
 
-# 4) Extract global features for mapping dataset (we will use AP-GeM here)
-cd ${WORKING_DIR}/deep-image-retrieval
-${PYTHONBIN} -m dirtorch.extract_kapture --kapture-root ${WORKING_DIR}/${DATASET}/mapping/ --checkpoint dirtorch/data/Resnet101-AP-GeM-LM18.pt --gpu 0
-# move to right location
-mkdir -p ${WORKING_DIR}/${DATASET}/global_features/Resnet101-AP-GeM-LM18/global_features
-mv ${WORKING_DIR}/${DATASET}/mapping/reconstruction/global_features/Resnet101-AP-GeM-LM18/* ${WORKING_DIR}/${DATASET}/global_features/Resnet101-AP-GeM-LM18/global_features/
-rm -rf ${WORKING_DIR}/${DATASET}/mapping/reconstruction/global_features/Resnet101-AP-GeM-LM18
+# # 4) Extract global features for mapping dataset (we will use AP-GeM here)
+# cd ${WORKING_DIR}/deep-image-retrieval
+# ${PYTHONBIN} -m dirtorch.extract_kapture --kapture-root ${WORKING_DIR}/${DATASET}/mapping/ --checkpoint dirtorch/data/Resnet101-AP-GeM-LM18.pt --gpu 0
+# # move to right location
+# mkdir -p ${WORKING_DIR}/${DATASET}/global_features/Resnet101-AP-GeM-LM18/global_features
+# mv ${WORKING_DIR}/${DATASET}/mapping/reconstruction/global_features/Resnet101-AP-GeM-LM18/* ${WORKING_DIR}/${DATASET}/global_features/Resnet101-AP-GeM-LM18/global_features/
+# rm -rf ${WORKING_DIR}/${DATASET}/mapping/reconstruction/global_features/Resnet101-AP-GeM-LM18
 
 # 5) Extract local features for mapping dataset (we will use R2D2 here)
 cd ${WORKING_DIR}/r2d2
 ${PYTHONBIN} extract_kapture.py --model models/r2d2_WASF_N8_big.pt --kapture-root ${WORKING_DIR}/${DATASET}/mapping/ --min-scale 0.3 --min-size 128 --max-size 9999 --top-k ${KPTS}
+# python3 extract_kapture.py --model models/r2d2_WASF_N8_big.pt --kapture-root /data/MUTC_resized_informative_features/query1 --min-scale 0.3 --min-size 128 --max-size 9999 --top-k 20000
 # move to right location
 mkdir -p ${WORKING_DIR}/${DATASET}/local_features/r2d2_WASF_N8_big/descriptors
 mv ${WORKING_DIR}/${DATASET}/mapping/reconstruction/descriptors/r2d2_WASF_N8_big/* ${WORKING_DIR}/${DATASET}/local_features/r2d2_WASF_N8_big/descriptors/
 mkdir -p ${WORKING_DIR}/${DATASET}/local_features/r2d2_WASF_N8_big/keypoints
 mv ${WORKING_DIR}/${DATASET}/mapping/reconstruction/keypoints/r2d2_WASF_N8_big/* ${WORKING_DIR}/${DATASET}/local_features/r2d2_WASF_N8_big/keypoints/
 
-# 6) mapping pipeline
-LOCAL=r2d2_WASF_N8_big
-GLOBAL=Resnet101-AP-GeM-LM18
-kapture_pipeline_mapping.py -v debug -f \
-  -i ${WORKING_DIR}/${DATASET}/mapping \
-  -kpt ${WORKING_DIR}/${DATASET}/local_features/${LOCAL}/keypoints \
-  -desc ${WORKING_DIR}/${DATASET}/local_features/${LOCAL}/descriptors \
-  -gfeat ${WORKING_DIR}/${DATASET}/global_features/${GLOBAL}/global_features \
-  -matches ${WORKING_DIR}/${DATASET}/local_features/${LOCAL}/NN_no_gv/matches \
-  -matches-gv ${WORKING_DIR}/${DATASET}/local_features/${LOCAL}/NN_colmap_gv/matches \
-  --colmap-map ${WORKING_DIR}/${DATASET}/colmap-sfm/${LOCAL}/${GLOBAL} \
-  --topk ${TOPK}
+# # 6) mapping pipeline
+# LOCAL=r2d2_WASF_N8_big
+# GLOBAL=Resnet101-AP-GeM-LM18
+# kapture_pipeline_mapping.py -v debug -f \
+#   -i ${WORKING_DIR}/${DATASET}/mapping \
+#   -kpt ${WORKING_DIR}/${DATASET}/local_features/${LOCAL}/keypoints \
+#   -desc ${WORKING_DIR}/${DATASET}/local_features/${LOCAL}/descriptors \
+#   -gfeat ${WORKING_DIR}/${DATASET}/global_features/${GLOBAL}/global_features \
+#   -matches ${WORKING_DIR}/${DATASET}/local_features/${LOCAL}/NN_no_gv/matches \
+#   -matches-gv ${WORKING_DIR}/${DATASET}/local_features/${LOCAL}/NN_colmap_gv/matches \
+#   --colmap-map ${WORKING_DIR}/${DATASET}/colmap-sfm/${LOCAL}/${GLOBAL} \
+#   --topk ${TOPK}
 
 # 7) Create temporal query sets (they will be modified)
 #mkdir -p ${WORKING_DIR}/${DATASET}/query/sensors

@@ -1,4 +1,4 @@
-#!/bin/bash -e -v
+#!/bin/bash -e
 # Run this script in docker,
 # but first pull the most recent version.
 
@@ -9,9 +9,9 @@
 
 # 0a) Define paths and params
 PYTHONBIN=python3.6
-WORKING_DIR=/data/working_dir_MUTC
+WORKING_DIR=/data/working_dir_MUTC_resized_new_saved_features
 DATASETS_PATH=/data
-DATASET=MUTC
+DATASET=MUTC_resized
 mkdir -p ${DATASETS_PATH}
 mkdir -p ${WORKING_DIR}
 

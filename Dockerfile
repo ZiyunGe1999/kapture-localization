@@ -1,5 +1,5 @@
 #FROM ubuntu:18.04
-FROM nvidia/cudagl:10.0-devel-ubuntu18.04
+FROM nvidia/cudagl:11.2.0-devel-ubuntu18.04
 MAINTAINER naverlabs "kapture@naverlabs.com"
 
 # setup environment
@@ -38,6 +38,7 @@ RUN apt-get update \
     qt5-default \
     x11-apps \
     mesa-utils \
+    unzip \
   && rm -rf /var/lib/apt/lists/*
 
 
@@ -96,6 +97,9 @@ RUN     python3 -m pip install cmake --upgrade
 
 WORKDIR ${SOURCE_PREFIX}
 RUN     git clone --recursive https://github.com/vlarsson/PoseLib.git
+WORKDIR ${SOURCE_PREFIX}/PoseLib
+RUN	git checkout 67dc757c619a320ae3cf4a4ffd4e4b7fc5daa692
+WORKDIR ${SOURCE_PREFIX}
 RUN     mkdir -p ./PoseLib/_build
 RUN     cd  ./PoseLib/_build && \
         cmake -DCMAKE_INSTALL_PREFIX=../_install .. && \
@@ -109,7 +113,9 @@ RUN      python3 -m pip install kapture
 # install kapture-localization
 ADD      . ${SOURCE_PREFIX}/kapture-localization
 WORKDIR  ${SOURCE_PREFIX}/kapture-localization
-RUN      python3 -m pip install "torch==1.4.0" "torchvision==0.5.0" "scikit_learn==0.20.2"
+#RUN      python3 -m pip install "torch==1.4.0" "torchvision==0.5.0" "scikit_learn==0.20.2"
+RUN      python3 -m pip install torch==1.10.2+cu113 torchvision==0.11.3+cu113 torchaudio==0.10.2+cu113 -f https://download.pytorch.org/whl/cu113/torch_stable.html
+RUN      python3 -m pip install "scikit_learn==0.20.2"
 RUN      python3 -m pip install -r requirements.txt --use-feature=2020-resolver
 RUN      python3 setup.py install
 
